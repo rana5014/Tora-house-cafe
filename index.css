@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: #0c0a09;
+    color: #f7f2ea;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Arabic typography adjustment */
+  html[dir="rtl"] body {
+    font-family: 'Tajawal', 'Cairo', sans-serif;
+  }
+}
+
+/* Custom Gold Glow & Utilities */
+@keyframes goldPulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.05);
+  }
+}
+
+.animate-gold-pulse {
+  animation: goldPulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #11100f;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2b2825;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #e5a93c;
+}
