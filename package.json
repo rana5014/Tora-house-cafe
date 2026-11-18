@@ -7,7 +7,7 @@
     "dev": "node server/server.js",
     "dev:vite": "vite --host 0.0.0.0",
     "server": "node server/server.js",
-    "build": "tsc && vite build && cp dist/index.html dist/404.html",
+    "build": "tsc && vite build && node scripts/prepare-pages.js",
     "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
