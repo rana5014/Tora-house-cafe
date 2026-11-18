@@ -1,0 +1,1 @@
+# Keep this directory in git while ignoring sensitive runtime JSON files (security.json, orders.json)

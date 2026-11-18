@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" fill="none">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F6DD99" />
+      <stop offset="50%" stop-color="#E5A93C" />
+      <stop offset="100%" stop-color="#C98B22" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Emblem Icon -->
+  <g transform="translate(10, 10)">
+    <!-- Outer Shield / Geometric Frame -->
+    <path d="M50 5 L88 28 L88 72 L50 95 L12 72 L12 28 Z" stroke="url(#goldGrad)" stroke-width="2.5" fill="#181716" />
+    <path d="M50 12 L80 32 L80 68 L50 88 L20 68 L20 32 Z" stroke="url(#goldGrad)" stroke-width="1" opacity="0.6" fill="none" />
+    
+    <!-- Stylized Tora Tiger / Steam Coffee Monogram -->
+    <!-- Coffee Cup & Steam -->
+    <path d="M36 50 C36 62 44 68 50 68 C56 68 64 62 64 50 L36 50 Z" fill="url(#goldGrad)" />
+    <path d="M64 54 C68 54 70 56 70 59 C70 62 68 64 64 64" stroke="url(#goldGrad)" stroke-width="2" fill="none" />
+    <!-- Steam Curves -->
+    <path d="M43 44 C42 38 46 34 44 28" stroke="url(#goldGrad)" stroke-width="2" stroke-linecap="round" fill="none" />
+    <path d="M50 42 C49 35 53 32 51 25" stroke="url(#goldGrad)" stroke-width="2.2" stroke-linecap="round" fill="none" />
+    <path d="M57 44 C56 38 60 34 58 28" stroke="url(#goldGrad)" stroke-width="2" stroke-linecap="round" fill="none" />
+    <!-- Mini star/accent -->
+    <polygon points="50,73 52,78 57,78 53,81 55,86 50,83 45,86 47,81 43,78 48,78" fill="url(#goldGrad)" />
+  </g>
+
+  <!-- Wordmark -->
+  <!-- TORA HOUSE -->
+  <text x="120" y="58" font-family="'Playfair Display', Georgia, serif" font-size="38" font-weight="800" letter-spacing="4" fill="#FFFFFF">
+    TORA <tspan fill="url(#goldGrad)">HOUSE</tspan>
+  </text>
+
+  <!-- Subtitle: COFFEE • TEA • JUICES -->
+  <text x="123" y="82" font-family="'Inter', sans-serif" font-size="11" font-weight="600" letter-spacing="6" fill="#D1D5DB">
+    COFFEE <tspan fill="#E5A93C">•</tspan> TEA <tspan fill="#E5A93C">•</tspan> JUICES
+  </text>
+
+  <!-- Arabic Subtitle: بيت تورا -->
+  <text x="123" y="100" font-family="'Tajawal', sans-serif" font-size="12" font-weight="700" letter-spacing="2" fill="#E5A93C" opacity="0.9">
+    بيت تورا — قهوة • شاي • عصائر
+  </text>
+</svg>
