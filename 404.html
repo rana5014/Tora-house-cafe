@@ -2,20 +2,60 @@
 <html lang="en" dir="ltr" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/Tora-house-cafe/logo.svg" />
+    <link rel="icon" type="image/svg+xml" href="./logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>TORA HOUSE | Coffee • Tea • Juices — بيت تورا</title>
     <meta name="description" content="TORA HOUSE - Fresh Taste. Every Moment. Premium specialty coffee, iced refreshers, mojitos, artisanal tea, and fresh bakery in Saudi Arabia." />
     <meta name="keywords" content="Tora House, Coffee, Tea, Juices, Riyadh, Saudi Arabia, Spanish Latte, V60, Mojito, Cafe" />
     
-    <!-- Google Fonts: Playfair Display, Inter, Tajawal, Cairo -->
+    <!-- Google Fonts: Cairo, Inter, Playfair Display, Tajawal -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500;1,600&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="/Tora-house-cafe/assets/index-BR0BD_1N.js"></script>
-    <link rel="stylesheet" crossorigin href="/Tora-house-cafe/assets/index-D1jLMqRj.css">
+
+    <!-- Primary CSS with Automatic Fallback for Root and Assets -->
+    <link rel="stylesheet" id="tora-theme-css" crossorigin href="/Tora-house-cafe/index-D1jLMqRj.css">
+    <script>
+      (function() {
+        var base = window.location.pathname.startsWith('/Tora-house-cafe') ? '/Tora-house-cafe/' : './';
+        var cssEl = document.getElementById('tora-theme-css');
+        if (cssEl) {
+          if (!window.location.pathname.startsWith('/Tora-house-cafe')) {
+            cssEl.href = base + 'index-D1jLMqRj.css';
+          }
+          cssEl.onerror = function() {
+            this.onerror = null;
+            this.href = base + 'assets/index-D1jLMqRj.css';
+          };
+        }
+      })();
+    </script>
   </head>
   <body class="bg-[#0c0a09] text-stone-100 antialiased selection:bg-amber-500 selection:text-black min-h-screen">
     <div id="root"></div>
+
+    <!-- Universal Resilient Module Loader for GitHub Pages -->
+    <script type="module">
+      (function() {
+        var base = window.location.pathname.startsWith('/Tora-house-cafe') ? '/Tora-house-cafe/' : './';
+        var jsName = 'index-BR0BD_1N.js';
+        
+        function load(src, fallback) {
+          var s = document.createElement('script');
+          s.type = 'module';
+          s.crossOrigin = 'anonymous';
+          s.src = src;
+          if (fallback) {
+            s.onerror = function() {
+              load(fallback, null);
+            };
+          }
+          document.head.appendChild(s);
+        }
+
+        // Try root first (matches current GitHub Pages repo), then fallback to assets/
+        load(base + jsName, base + 'assets/' + jsName);
+      })();
+    </script>
   </body>
 </html>
