@@ -66,6 +66,10 @@ const htmlContent = `<!DOCTYPE html>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500;1,600&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
 
+    <!-- Moyasar Saudi Payment Gateway (Mada, Visa, Mastercard, Apple Pay) -->
+    <link rel="stylesheet" href="https://cdn.moyasar.com/mpf/1.14.0/moyasar.css">
+    <script src="https://cdn.moyasar.com/mpf/1.14.0/moyasar.js"></script>
+
     <!-- Primary CSS with Automatic Fallback for Root and Assets -->
     <link rel="stylesheet" id="tora-theme-css" crossorigin href="/Tora-house-cafe/${cssFile}">
     <script>

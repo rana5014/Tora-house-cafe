@@ -146,6 +146,8 @@ export interface CafeSettings {
   tiktokUrl: string;
   snapchatUrl: string;
   twitterUrl: string;
+  moyasarPublishableKey?: string;
+  moyasarLiveMode?: boolean;
 }
 
 export interface CustomerProfile {

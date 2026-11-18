@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
-import { StoreProvider } from './context/StoreContext';
+import { StoreProvider, useStore } from './context/StoreContext';
 import { CartProvider, useCart } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import { Navbar } from './components/common/Navbar';
@@ -26,10 +26,12 @@ import { ReceiptPrintModal } from './components/admin/ReceiptPrintModal';
 import { Product, ProductSizeOption, ProductCategory, Order } from './types';
 import { ShoppingBag } from 'lucide-react';
 import { formatCurrency } from './lib/utils';
+import { verifyMoyasarPayment, getPendingCheckoutOrder, clearPendingCheckoutOrder } from './lib/moyasarService';
 
 const AppContent: React.FC = () => {
   const { lang } = useLanguage();
-  const { itemCount, subtotal, openCart } = useCart();
+  const { itemCount, subtotal, openCart, clearCart } = useCart();
+  const { settings, createOrder } = useStore();
 
   const [activeView, setActiveView] = useState<'home' | 'menu'>('home');
   const [selectedMenuCategory, setSelectedMenuCategory] = useState<ProductCategory | 'all'>('all');
@@ -42,6 +44,60 @@ const AppContent: React.FC = () => {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
   const [customerReceiptOrder, setCustomerReceiptOrder] = useState<Order | null>(null);
+
+  // Handle return from Saudi Bank 3D Secure OTP authentication
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const paymentId = params.get('id');
+    const paymentStatus = params.get('status');
+    const paymentMsg = params.get('message');
+
+    if (paymentId && paymentStatus) {
+      // Clean query params so user doesn't re-trigger on refresh
+      const cleanUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+
+      if (paymentStatus === 'paid' || paymentStatus === 'captured') {
+        const pending = getPendingCheckoutOrder();
+        if (pending) {
+          (async () => {
+            try {
+              const verified = await verifyMoyasarPayment(paymentId, settings.moyasarPublishableKey);
+              if (verified.status === 'paid' || verified.status === 'captured') {
+                const created = await createOrder({
+                  customer: pending.customer,
+                  items: pending.items,
+                  subtotal: pending.subtotal,
+                  subtotalExclVat: pending.subtotalExclVat,
+                  tax: pending.tax,
+                  deliveryFee: pending.deliveryFee,
+                  total: pending.total,
+                  orderType: pending.orderType,
+                  paymentMethod: (verified.source?.company as any) || pending.paymentMethod || 'mada',
+                  paymentStatus: 'Paid',
+                  transactionId: paymentId,
+                  pickupTime: pending.orderType === 'pickup' ? '15–20 mins' : undefined,
+                });
+                clearCart();
+                clearPendingCheckoutOrder();
+                setCompletedOrder(created);
+              }
+            } catch (err) {
+              console.error('Error confirming Moyasar payment order:', err);
+            }
+          })();
+        }
+      } else if (paymentStatus === 'failed') {
+        clearPendingCheckoutOrder();
+        alert(
+          lang === 'ar'
+            ? `❌ تم رفض عملية الدفع من البنك: ${paymentMsg || 'يرجى التحقق من بيانات ورصيد البطاقة'}`
+            : `❌ Bank payment declined: ${paymentMsg || 'Please verify card balance or try Cash on Delivery'}`
+        );
+      }
+    }
+  }, [settings.moyasarPublishableKey]);
 
   const handleOpenCustomizer = (product: Product, defaultSize?: ProductSizeOption) => {
     setCustomizerProduct(product);

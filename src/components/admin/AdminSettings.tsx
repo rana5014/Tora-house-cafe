@@ -26,7 +26,9 @@ import {
   CloudOff,
   Sparkles,
   ExternalLink,
+  CreditCard,
 } from 'lucide-react';
+import { getMoyasarKey, isMoyasarSandbox } from '../../lib/moyasarService';
 
 export const AdminSettings: React.FC = () => {
   const {
@@ -85,6 +87,52 @@ export const AdminSettings: React.FC = () => {
   const [isTestingWa, setIsTestingWa] = useState(false);
   const [waTestResult, setWaTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [waSaveMsg, setWaSaveMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // ─── Moyasar Payment Gateway State ─────────────────────────────────
+  const [moyasarKeyInput, setMoyasarKeyInput] = useState(() => settings.moyasarPublishableKey || getMoyasarKey());
+  const [moyasarLiveMode, setMoyasarLiveMode] = useState<boolean>(() => Boolean(settings.moyasarLiveMode));
+  const [showMoyasarKey, setShowMoyasarKey] = useState(false);
+  const [isSavingMoyasar, setIsSavingMoyasar] = useState(false);
+  const [moyasarSaveMsg, setMoyasarSaveMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handleSaveMoyasar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingMoyasar(true);
+    setMoyasarSaveMsg(null);
+    try {
+      const trimmedKey = moyasarKeyInput.trim();
+      if (!trimmedKey) {
+        throw new Error(isAr ? 'يرجى إدخال مفتاح ميسر' : 'Please provide a Moyasar publishable key');
+      }
+      if (!trimmedKey.startsWith('pk_live_') && !trimmedKey.startsWith('pk_test_')) {
+        throw new Error(isAr ? 'المفتاح غير صالح. يجب أن يبدأ بـ pk_live_ أو pk_test_' : 'Invalid key format. Must start with pk_live_ or pk_test_');
+      }
+
+      await updateSettings({
+        ...settings,
+        moyasarPublishableKey: trimmedKey,
+        moyasarLiveMode: trimmedKey.startsWith('pk_live_') || moyasarLiveMode,
+      });
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('tora_moyasar_key', trimmedKey);
+      }
+
+      setMoyasarSaveMsg({
+        type: 'success',
+        text: isAr
+          ? 'تم حفظ ومزامنة بوابة دفع ميسر بنجاح مع قاعدة البيانات!'
+          : 'Moyasar Payment Gateway configuration saved and synchronized!',
+      });
+    } catch (err: any) {
+      setMoyasarSaveMsg({
+        type: 'error',
+        text: err.message || 'Failed to save Moyasar settings',
+      });
+    } finally {
+      setIsSavingMoyasar(false);
+    }
+  };
 
   // ─── Supabase Cloud Sync State ───────────────────────────────────────
   const [supabaseUrlInput, setSupabaseUrlInput] = useState(() => getSupabaseCredentials().url);
@@ -787,6 +835,153 @@ export const AdminSettings: React.FC = () => {
           </div>
         </div>
       </form>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          SECTION: MOYASAR SAUDI PAYMENT GATEWAY (REAL 3D SECURE OTP)
+          ══════════════════════════════════════════════════════════════════ */}
+      <div className="p-6 rounded-3xl bg-stone-900/60 border border-stone-800 space-y-6">
+        <div className="flex items-center justify-between border-b border-stone-800 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center">
+              <CreditCard className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-serif text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                <span>{isAr ? 'بوابة ميسر للمدفوعات السعودية (Moyasar Gateway)' : 'Moyasar Saudi Payment Gateway'}</span>
+              </h3>
+              <p className="text-xs text-stone-400">
+                {isAr
+                  ? 'إدارة بطاقات مدى، فيزا، ماستركارد، وأبل باي مع التحقق البنكي الفوري 3D Secure'
+                  : 'Manage real Mada, Visa, Mastercard, and Apple Pay payments with 3D Secure bank OTP verification'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span
+              className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 ${
+                moyasarKeyInput.startsWith('pk_live_')
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                  : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${moyasarKeyInput.startsWith('pk_live_') ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+              <span>
+                {moyasarKeyInput.startsWith('pk_live_')
+                  ? (isAr ? 'الوضع المباشر (أموال حقيقية)' : 'LIVE MODE (Real Money)')
+                  : (isAr ? 'الوضع التجريبي (Sandbox)' : 'TEST MODE (Sandbox)')}
+              </span>
+            </span>
+          </div>
+        </div>
+
+        {moyasarSaveMsg && (
+          <div
+            className={`p-3.5 rounded-2xl border text-xs font-semibold flex items-center gap-2 ${
+              moyasarSaveMsg.type === 'success'
+                ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300'
+                : 'bg-rose-950/40 border-rose-500/40 text-rose-300'
+            }`}
+          >
+            {moyasarSaveMsg.type === 'success' ? <Check className="w-4 h-4 text-emerald-400" /> : <AlertCircle className="w-4 h-4 text-rose-400" />}
+            <span>{moyasarSaveMsg.text}</span>
+          </div>
+        )}
+
+        {/* Supported Brands Preview */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+          <div className="p-3 rounded-2xl bg-stone-950 border border-stone-800 flex items-center gap-2.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            <div>
+              <p className="font-bold text-white text-xs">Mada (مدى)</p>
+              <p className="text-[10px] text-stone-400">Debit + 3DS SMS OTP</p>
+            </div>
+          </div>
+          <div className="p-3 rounded-2xl bg-stone-950 border border-stone-800 flex items-center gap-2.5">
+            <span className="w-2 h-2 rounded-full bg-blue-400" />
+            <div>
+              <p className="font-bold text-white text-xs">Visa Card</p>
+              <p className="text-[10px] text-stone-400">Credit / Debit</p>
+            </div>
+          </div>
+          <div className="p-3 rounded-2xl bg-stone-950 border border-stone-800 flex items-center gap-2.5">
+            <span className="w-2 h-2 rounded-full bg-amber-400" />
+            <div>
+              <p className="font-bold text-white text-xs">Mastercard</p>
+              <p className="text-[10px] text-stone-400">Credit / Debit</p>
+            </div>
+          </div>
+          <div className="p-3 rounded-2xl bg-stone-950 border border-stone-800 flex items-center gap-2.5">
+            <span className="w-2 h-2 rounded-full bg-purple-400" />
+            <div>
+              <p className="font-bold text-white text-xs">Apple Pay</p>
+              <p className="text-[10px] text-stone-400">Biometric One-Touch</p>
+            </div>
+          </div>
+        </div>
+
+        <form onSubmit={handleSaveMoyasar} className="space-y-4">
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-stone-300">
+                {isAr ? 'مفتاح ميسر القابل للنشر (Publishable API Key)' : 'Moyasar Publishable API Key'}
+              </label>
+              <a
+                href="https://dashboard.moyasar.com"
+                target="_blank"
+                rel="noreferrer"
+                className="text-[11px] text-amber-400 hover:text-amber-300 flex items-center gap-1 transition-colors"
+              >
+                <span>{isAr ? 'لوحة تحكم ميسر' : 'Moyasar Dashboard'}</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+
+            <div className="relative">
+              <input
+                type={showMoyasarKey ? 'text' : 'password'}
+                required
+                value={moyasarKeyInput}
+                onChange={(e) => setMoyasarKeyInput(e.target.value)}
+                placeholder="pk_live_... or pk_test_..."
+                className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-amber-400 pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowMoyasarKey(!showMoyasarKey)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-white"
+              >
+                {showMoyasarKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <p className="text-[11px] text-stone-500 mt-1">
+              {isAr
+                ? 'استخدم مفتاح pk_live_ لاستقبال أموال حقيقية في حسابك البنكي، أو pk_test_ لاختبار العمليات.'
+                : 'Use pk_live_ key to accept real money charges deposited to your bank, or pk_test_ for sandbox testing.'}
+            </p>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-amber-500/5 border border-amber-500/20 text-xs text-stone-300 space-y-1.5">
+            <p className="font-bold text-amber-400 flex items-center gap-1.5">
+              <span>🔒 {isAr ? 'أمان التحقق البنكي 3D Secure' : '3D Secure Bank Verification'}</span>
+            </p>
+            <p className="text-[11px] text-stone-400 leading-relaxed">
+              {isAr
+                ? 'عند استخدام هذا المفتاح، سيتم توجيه العميل تلقائياً إلى صفحة التحقق الخاصة ببنكه (الراجحي، الأهلي، الرياض، إلخ) لإدخال رمز OTP المرسل على جواله لخصم المبلغ وتأكيد الطلب فوراً.'
+                : 'When customers pay, Moyasar automatically redirects to their Saudi bank OTP page (Al Rajhi, SNB, Riyad Bank, etc.) for SMS verification before charging the card and saving the order in real time.'}
+            </p>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isSavingMoyasar}
+            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-black font-bold text-xs flex items-center justify-center gap-2 shadow-gold-sm transition-all active:scale-95 disabled:opacity-50"
+          >
+            {isSavingMoyasar ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+            <span>{isAr ? 'حفظ ومزامنة بوابة الدفع' : 'Save & Synchronize Gateway'}</span>
+          </button>
+        </form>
+      </div>
 
       {/* ══════════════════════════════════════════════════════════════════
           SECTION 4: CENTRALIZED CLOUD DATABASE & REALTIME SYNC (SUPABASE)

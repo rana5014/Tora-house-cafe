@@ -26,6 +26,8 @@ export const initialCafeSettings: CafeSettings = {
   tiktokUrl: 'https://tiktok.com/@torahouse.sa',
   snapchatUrl: 'https://snapchat.com/add/torahouse.sa',
   twitterUrl: 'https://x.com/torahouse_sa',
+  moyasarPublishableKey: 'pk_test_vcFUAGuvJyBgAyuhAQ71R4Bifhgf7rHA824876b5',
+  moyasarLiveMode: false,
 };
 
 export interface Testimonial {
